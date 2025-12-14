@@ -1,12 +1,11 @@
+using PaymentGateway.Api.Helpers;
 using PaymentGateway.Api.Models;
 using PaymentGateway.Api.Models.Requests;
-using PaymentGateway.Api.Services;
 
 namespace PaymentGateway.Api.Tests;
 
 public class PaymentValidatorTests
 {
-    private readonly PaymentValidator _validator = new();
 
     [Fact]
     public void Validate_ValidPaymentRequest_ReturnsSuccess()
@@ -15,7 +14,7 @@ public class PaymentValidatorTests
         var request = CreateValidRequest();
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.True(result.IsValid);
@@ -30,7 +29,7 @@ public class PaymentValidatorTests
         request.CardNumber = string.Empty;
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -45,7 +44,7 @@ public class PaymentValidatorTests
         request.CardNumber = "1234567890123"; // 13 digits
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -60,7 +59,7 @@ public class PaymentValidatorTests
         request.CardNumber = "12345678901234567890"; // 20 digits
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -75,7 +74,7 @@ public class PaymentValidatorTests
         request.CardNumber = "12345678901234"; // 14 digits
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.True(result.IsValid);
@@ -89,7 +88,7 @@ public class PaymentValidatorTests
         request.CardNumber = "1234567890123456789"; // 19 digits
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.True(result.IsValid);
@@ -103,7 +102,7 @@ public class PaymentValidatorTests
         request.CardNumber = "12345678901234AB";
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -118,7 +117,7 @@ public class PaymentValidatorTests
         request.ExpiryMonth = 0;
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -133,7 +132,7 @@ public class PaymentValidatorTests
         request.ExpiryMonth = 13;
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -149,7 +148,7 @@ public class PaymentValidatorTests
         request.ExpiryMonth = 12;
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -166,7 +165,7 @@ public class PaymentValidatorTests
         request.ExpiryMonth = now.Month - 1; // Last month
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -183,7 +182,7 @@ public class PaymentValidatorTests
         request.ExpiryMonth = now.Month; // Current month is valid
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.True(result.IsValid);
@@ -209,7 +208,7 @@ public class PaymentValidatorTests
         }
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.True(result.IsValid);
@@ -223,7 +222,7 @@ public class PaymentValidatorTests
         request.Currency = string.Empty;
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -238,7 +237,7 @@ public class PaymentValidatorTests
         request.Currency = "GB";
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -253,7 +252,7 @@ public class PaymentValidatorTests
         request.Currency = "GBPP";
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -268,7 +267,7 @@ public class PaymentValidatorTests
         request.Currency = "JPY";
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -283,7 +282,7 @@ public class PaymentValidatorTests
         request.Currency = "GBP";
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.True(result.IsValid);
@@ -297,7 +296,7 @@ public class PaymentValidatorTests
         request.Currency = "EUR";
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.True(result.IsValid);
@@ -311,7 +310,7 @@ public class PaymentValidatorTests
         request.Currency = "USD";
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.True(result.IsValid);
@@ -325,7 +324,7 @@ public class PaymentValidatorTests
         request.Currency = "gbp";
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.True(result.IsValid);
@@ -339,7 +338,7 @@ public class PaymentValidatorTests
         request.Amount = 0;
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -354,7 +353,7 @@ public class PaymentValidatorTests
         request.Amount = -100;
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -369,7 +368,7 @@ public class PaymentValidatorTests
         request.Amount = 1;
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.True(result.IsValid);
@@ -383,7 +382,7 @@ public class PaymentValidatorTests
         request.Cvv = string.Empty;
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -398,7 +397,7 @@ public class PaymentValidatorTests
         request.Cvv = "12"; // 2 digits
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -413,7 +412,7 @@ public class PaymentValidatorTests
         request.Cvv = "12345"; // 5 digits
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -428,7 +427,7 @@ public class PaymentValidatorTests
         request.Cvv = "123";
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.True(result.IsValid);
@@ -442,7 +441,7 @@ public class PaymentValidatorTests
         request.Cvv = "1234";
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.True(result.IsValid);
@@ -456,7 +455,7 @@ public class PaymentValidatorTests
         request.Cvv = "12A";
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
@@ -478,7 +477,7 @@ public class PaymentValidatorTests
         };
 
         // Act
-        var result = _validator.Validate(request);
+        var result = PaymentValidator.Validate(request);
 
         // Assert
         Assert.False(result.IsValid);
