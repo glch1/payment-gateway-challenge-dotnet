@@ -1,11 +1,29 @@
-﻿namespace PaymentGateway.Api.Models.Requests;
+﻿using System.ComponentModel.DataAnnotations;
+
+using PaymentGateway.Api.Constants;
+
+namespace PaymentGateway.Api.Models.Requests;
 
 public class PostPaymentRequest
 {
-    public int CardNumberLastFour { get; set; }
+    [Required]
+    public string CardNumber { get; set; } = string.Empty;
+
+    [Required]
+    [Range(CardDetailsConstants.ExpiryMonthMin, CardDetailsConstants.ExpiryMonthMax)]
     public int ExpiryMonth { get; set; }
+
+    [Required]
     public int ExpiryYear { get; set; }
-    public string Currency { get; set; }
+
+    [Required]
+    [StringLength(CardDetailsConstants.CurrencyLength, MinimumLength = CardDetailsConstants.CurrencyLength)]
+    public string Currency { get; set; } = string.Empty;
+
+    [Required]
     public int Amount { get; set; }
-    public int Cvv { get; set; }
+
+    [Required]
+    [StringLength(CardDetailsConstants.CvvMaxLength, MinimumLength = CardDetailsConstants.CvvMinLength)]
+    public string Cvv { get; set; } = string.Empty;
 }
