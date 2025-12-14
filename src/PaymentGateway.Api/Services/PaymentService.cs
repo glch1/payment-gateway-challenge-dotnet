@@ -15,10 +15,10 @@ namespace PaymentGateway.Api.Services;
 public class PaymentService : IPaymentService
 {
     private readonly IBankClient _bankClient;
-    private readonly PaymentsRepository _repository;
+    private readonly IPaymentsRepository _repository;
     private readonly ILogger<PaymentService> _logger;
 
-    public PaymentService(IBankClient bankClient, PaymentsRepository repository, ILogger<PaymentService> logger)
+    public PaymentService(IBankClient bankClient, IPaymentsRepository repository, ILogger<PaymentService> logger)
     {
         _bankClient = bankClient;
         _repository = repository;
@@ -98,7 +98,7 @@ public class PaymentService : IPaymentService
         };
 
         // Only store payments that made it to the bank (Authorized/Declined)
-        _repository.Add(paymentResponse);
+        await _repository.AddAsync(paymentResponse);
         _logger.LogDebug("Payment stored in repository. PaymentId: {PaymentId}, Status: {Status}",
             paymentId, status);
 

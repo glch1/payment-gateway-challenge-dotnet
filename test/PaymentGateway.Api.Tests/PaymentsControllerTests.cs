@@ -2,8 +2,8 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-
 using PaymentGateway.Api.Controllers;
+using PaymentGateway.Api.Interfaces;
 using PaymentGateway.Api.Models.Responses;
 using PaymentGateway.Api.Services;
 
@@ -28,12 +28,12 @@ public class PaymentsControllerTests
         };
 
         var paymentsRepository = new PaymentsRepository();
-        paymentsRepository.Add(payment);
+        await paymentsRepository.AddAsync(payment);
 
         var webApplicationFactory = new WebApplicationFactory<PaymentsController>();
         var client = webApplicationFactory.WithWebHostBuilder(builder =>
             builder.ConfigureServices(services => ((ServiceCollection)services)
-                .AddSingleton(paymentsRepository)))
+                .AddSingleton<IPaymentsRepository>(paymentsRepository)))
             .CreateClient();
 
         // Act
