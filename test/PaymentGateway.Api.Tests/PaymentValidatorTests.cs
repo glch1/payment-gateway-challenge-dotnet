@@ -342,7 +342,7 @@ public class PaymentValidatorTests
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Contains("Amount must be at least 1 minor currency unit", result.Errors);
+        Assert.Contains("Amount must be at greater than 0", result.Errors);
     }
 
     [Fact]
@@ -357,7 +357,7 @@ public class PaymentValidatorTests
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Contains("Amount must be at least 1 minor currency unit", result.Errors);
+        Assert.Contains("Amount must be at greater than 0", result.Errors);
     }
 
     [Fact]
