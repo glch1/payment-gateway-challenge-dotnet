@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Moq;
+using PaymentGateway.Api.Exceptions;
 using PaymentGateway.Api.Interfaces;
 using PaymentGateway.Api.Models;
 using PaymentGateway.Api.Models.Bank;
@@ -26,7 +27,7 @@ public class PaymentServiceTests
     }
 
     [Fact]
-    public async Task ProcessPaymentAsync_InvalidRequest_ReturnsRejected_DoesNotCallBank_DoesNotStore()
+    public async Task ProcessPaymentAsync_InvalidRequest_ThrowsValidationException_DoesNotCallBank_DoesNotStore()
     {
         // Arrange
         var request = new PostPaymentRequest
@@ -39,14 +40,14 @@ public class PaymentServiceTests
             Cvv = "123"
         };
 
-        // Act
-        var result = await _paymentService.ProcessPaymentAsync(request);
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(() => _paymentService.ProcessPaymentAsync(request));
 
-        // Assert
-        Assert.Equal(PaymentStatus.Rejected, result.Status);
-        Assert.NotEqual(Guid.Empty, result.Id);
-        Assert.Equal(0, result.CardNumberLastFour); // Card number too short, returns 0
-        _repositoryMock.Verify(x => x.AddAsync(It.IsAny<PostPaymentResponse>()), Times.Never); // Should not store rejected payments
+        Assert.NotEmpty(exception.Errors);
+        Assert.Contains("Card number must be between 14 and 19 characters long", exception.Errors);
+
+        // Verify bank and repository were not called
+        _repositoryMock.Verify(x => x.AddAsync(It.IsAny<PostPaymentResponse>()), Times.Never);
         _bankClientMock.Verify(x => x.ProcessPaymentAsync(It.IsAny<BankPaymentRequest>()), Times.Never);
     }
 
@@ -69,9 +70,9 @@ public class PaymentServiceTests
         var result = await _paymentService.ProcessPaymentAsync(request);
 
         // Assert
-        Assert.Equal(PaymentStatus.Authorized, result.Status);
+        Assert.Equal("Authorized", result.Status);
         Assert.NotEqual(Guid.Empty, result.Id);
-        Assert.Equal(3456, result.CardNumberLastFour);
+        Assert.Equal("3456", result.CardNumberLastFour);
         Assert.Equal(request.ExpiryMonth, result.ExpiryMonth);
         Assert.Equal(request.ExpiryYear, result.ExpiryYear);
         Assert.Equal(request.Currency, result.Currency);
@@ -79,9 +80,9 @@ public class PaymentServiceTests
 
         // Verify stored
         _repositoryMock.Verify(x => x.AddAsync(
-            It.Is<PostPaymentResponse>(p => 
-                p.Id == result.Id && 
-                p.Status == PaymentStatus.Authorized)), 
+            It.Is<PostPaymentResponse>(p =>
+                p.Id == result.Id &&
+                p.Status == "Authorized")),
             Times.Once);
     }
 
@@ -104,15 +105,15 @@ public class PaymentServiceTests
         var result = await _paymentService.ProcessPaymentAsync(request);
 
         // Assert
-        Assert.Equal(PaymentStatus.Declined, result.Status);
+        Assert.Equal("Declined", result.Status);
         Assert.NotEqual(Guid.Empty, result.Id);
-        Assert.Equal(3456, result.CardNumberLastFour);
+        Assert.Equal("3456", result.CardNumberLastFour);
 
         // Verify stored
         _repositoryMock.Verify(x => x.AddAsync(
-            It.Is<PostPaymentResponse>(p => 
-                p.Id == result.Id && 
-                p.Status == PaymentStatus.Declined)), 
+            It.Is<PostPaymentResponse>(p =>
+                p.Id == result.Id &&
+                p.Status == "Declined")),
             Times.Once);
     }
 
@@ -146,12 +147,12 @@ public class PaymentServiceTests
         // Assert
         var expectedExpiryDate = $"{request.ExpiryMonth:D2}/{request.ExpiryYear}";
         _bankClientMock.Verify(x => x.ProcessPaymentAsync(
-            It.Is<BankPaymentRequest>(r => 
+            It.Is<BankPaymentRequest>(r =>
                 r.CardNumber == request.CardNumber &&
                 r.ExpiryDate == expectedExpiryDate &&
                 r.Currency == request.Currency &&
                 r.Amount == request.Amount &&
-                r.Cvv == request.Cvv)), 
+                r.Cvv == request.Cvv)),
             Times.Once);
     }
 
@@ -210,15 +211,15 @@ public class PaymentServiceTests
         var result = await _paymentService.ProcessPaymentAsync(request);
 
         // Assert
-        Assert.Equal(3456, result.CardNumberLastFour);
+        Assert.Equal("3456", result.CardNumberLastFour);
     }
 
     [Fact]
-    public async Task ProcessPaymentAsync_ShortCardNumber_MasksCorrectly()
+    public async Task ProcessPaymentAsync_ValidCardNumber_MasksCorrectly()
     {
         // Arrange
         var request = CreateValidRequest();
-        request.CardNumber = "1234"; // Exactly 4 digits
+        request.CardNumber = "1234567890123456"; // Valid 16-digit card
 
         var bankResponse = new BankPaymentResponse
         {
@@ -234,11 +235,11 @@ public class PaymentServiceTests
         var result = await _paymentService.ProcessPaymentAsync(request);
 
         // Assert
-        Assert.Equal(1234, result.CardNumberLastFour);
+        Assert.Equal("3456", result.CardNumberLastFour); // Last 4 digits of 1234567890123456
     }
 
     [Fact]
-    public async Task ProcessPaymentAsync_RejectedPayment_DoesNotStore()
+    public async Task ProcessPaymentAsync_InvalidExpiryMonth_ThrowsValidationException_DoesNotStore()
     {
         // Arrange
         var request = new PostPaymentRequest
@@ -251,11 +252,12 @@ public class PaymentServiceTests
             Cvv = "123"
         };
 
-        // Act
-        var result = await _paymentService.ProcessPaymentAsync(request);
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(() => _paymentService.ProcessPaymentAsync(request));
 
-        // Assert
-        Assert.Equal(PaymentStatus.Rejected, result.Status);
+        Assert.NotEmpty(exception.Errors);
+        Assert.Contains("Expiry month must be between 1 and 12", exception.Errors);
+
         _repositoryMock.Verify(x => x.AddAsync(It.IsAny<PostPaymentResponse>()), Times.Never);
         _bankClientMock.Verify(x => x.ProcessPaymentAsync(It.IsAny<BankPaymentRequest>()), Times.Never);
     }

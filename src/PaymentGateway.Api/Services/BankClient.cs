@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Sockets;
 using System.Text.Json;
 using PaymentGateway.Api.Interfaces;
 using PaymentGateway.Api.Models.Bank;
@@ -80,6 +81,18 @@ public class BankClient : IBankClient
 
             return bankResponse;
         }
+        catch (SocketException ex)
+        {
+            // Socket exceptions (connection refused, etc.) should be treated as service unavailable
+            _logger.LogDebug(ex, "Bank socket error - service appears to be unavailable");
+            throw new HttpRequestException("Bank service is unavailable", ex, HttpStatusCode.ServiceUnavailable);
+        }
+        catch (HttpRequestException ex) when (IsConnectionError(ex))
+        {
+            // Connection errors (service not running, network issues, etc.) should be treated as service unavailable
+            _logger.LogDebug(ex, "Bank connection error - service appears to be unavailable");
+            throw new HttpRequestException("Bank service is unavailable", ex, HttpStatusCode.ServiceUnavailable);
+        }
         catch (HttpRequestException)
         {
             throw;
@@ -89,6 +102,24 @@ public class BankClient : IBankClient
             _logger.LogDebug(ex, "Bank request timed out after waiting for response");
             throw new HttpRequestException("Bank request timed out", ex, HttpStatusCode.RequestTimeout);
         }
+    }
+
+    /// <summary>
+    /// Determines if an HttpRequestException is due to a connection error (service unavailable).
+    /// </summary>
+    private static bool IsConnectionError(HttpRequestException ex)
+    {
+        if (ex.InnerException is SocketException)
+        {
+            return true;
+        }
+
+        var message = ex.Message.ToLowerInvariant();
+        return message.Contains("connection") && 
+               (message.Contains("refused") || 
+                message.Contains("actively refused") || 
+                message.Contains("could not be established") ||
+                message.Contains("unreachable"));
     }
 }
 

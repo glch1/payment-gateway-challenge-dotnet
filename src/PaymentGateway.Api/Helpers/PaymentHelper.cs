@@ -9,16 +9,15 @@ public static class PaymentHelper
     /// Masks a card number by extracting the last 4 digits.
     /// </summary>
     /// <param name="cardNumber">The full card number</param>
-    /// <returns>The last 4 digits as an integer</returns>
-    public static int MaskCardNumber(string cardNumber)
+    /// <returns>The last 4 digits as a string, preserving leading zeros. Returns empty string for invalid input.</returns>
+    public static string MaskCardNumber(string cardNumber)
     {
-        if (string.IsNullOrWhiteSpace(cardNumber) || cardNumber.Length < 4)
+        if (string.IsNullOrWhiteSpace(cardNumber) || cardNumber.Length < 4 || !cardNumber.All(char.IsDigit))
         {
-            return 0;
+            return string.Empty;
         }
 
-        var lastFour = cardNumber.Substring(cardNumber.Length - 4);
-        return int.Parse(lastFour);
+        return cardNumber.Substring(cardNumber.Length - 4);
     }
 }
 
