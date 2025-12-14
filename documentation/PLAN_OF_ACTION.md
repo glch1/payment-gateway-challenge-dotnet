@@ -158,14 +158,30 @@ Controller → Service → Validator/BankClient → Repository
 
 ---
 
-### Task 4: Controller Updates
+### Task 4: Controller Updates ✅
 **Branch**: `task/4-update-controller`
 
-- [ ] Update controller: inject `PaymentService` (not repository)
-- [ ] Add POST endpoint:
-  - [ ] Call service, return 200/400/503 with appropriate responses
-- [ ] Fix GET endpoint: return 404 if not found
-- [ ] Write integration tests (POST authorized/declined/rejected, GET found/not found)
+- [x] Update controller: inject `IPaymentService` for POST endpoint (keep `IPaymentsRepository` for GET endpoint)
+- [x] Add POST endpoint:
+  - [x] Call service, return 200 OK for payment results (Authorized/Declined status in response body)
+  - [x] Return 400 Bad Request with validation errors when request is invalid (created `ValidationException` class)
+  - [x] Return 503 Service Unavailable when bank returns 503 or connection errors occur
+  - [x] Return 500 Internal Server Error for other bank errors (timeouts, invalid responses, etc.)
+- [x] GET endpoint already returns 404 if not found (fixed in Task 3)
+- [x] Update `BankClient` to handle connection errors:
+  - [x] Catch `SocketException` directly (connection refused)
+  - [x] Detect connection errors in `HttpRequestException` via `IsConnectionError` helper method
+  - [x] Map connection errors to "Bank service is unavailable" with 503 status
+- [x] Update `MaskCardNumber` to return `string` instead of `int` to preserve leading zeros
+- [x] Update response models (`PostPaymentResponse`, `GetPaymentResponse`) to use `string` for `CardNumberLastFour` and `Status`
+- [x] Write unit tests for `PaymentHelper` class (8 tests covering valid/invalid cases, leading zeros, edge cases)
+- [x] Write integration tests:
+  - [x] POST authorized (returns 200 with Authorized status)
+  - [x] POST declined (returns 200 with Declined status)
+  - [x] POST invalid request (returns 400 with validation errors, bank not called)
+  - [x] POST bank service unavailable (returns 503)
+  - [x] GET found (returns 200)
+  - [x] GET not found (returns 404)
 
 ---
 
