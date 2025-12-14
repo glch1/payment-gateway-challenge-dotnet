@@ -2,12 +2,11 @@ using PaymentGateway.Api.Constants;
 using PaymentGateway.Api.Models;
 using PaymentGateway.Api.Models.Requests;
 
-namespace PaymentGateway.Api.Services;
+namespace PaymentGateway.Api.Helpers;
 
-public class PaymentValidator
+public static class PaymentValidator
 {
-
-    public ValidationResult Validate(PostPaymentRequest request)
+    public static ValidationResult Validate(PostPaymentRequest request)
     {
         var errors = new List<string>();
 

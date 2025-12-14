@@ -125,17 +125,19 @@ Controller → Service → Validator/BankClient → Repository
 
 ---
 
-### Task 2: Bank Client
+### Task 2: Bank Client ✅
 **Branch**: `task/2-bank-client`
 
-- [ ] Create `BankClient` class with `ProcessPaymentAsync`:
-  - [ ] Map expiry to "MM/YYYY" format
-  - [ ] POST to `http://localhost:8080/payments`
-  - [ ] Handle authorized/declined responses
-  - [ ] Handle errors (400, 503, timeouts)
-- [ ] Create `BankPaymentRequest` and `BankPaymentResponse` DTOs
-- [ ] Register `BankClient` in DI (with HttpClient, base URL from config)
-- [ ] Write unit tests (mock HttpClient, test all response scenarios)
+- [x] Create `BankClient` class with `ProcessPaymentAsync`:
+  - [x] POST to `http://localhost:8080/payments` (configurable base URL from appsettings.json)
+  - [x] Handle authorized/declined responses
+  - [x] Handle errors (400, 503, timeouts, invalid JSON)
+  - [x] Read response content as string first (can only be read once), then deserialize
+- [x] Create `BankPaymentRequest` and `BankPaymentResponse` DTOs (in `Models/Bank/` folder with JsonPropertyName attributes)
+- [x] Create `IBankClient` interface in `Interfaces/` folder
+- [x] Register `IBankClient` with `BankClient` implementation in DI (with HttpClient, base URL from config)
+- [x] Add debug-level logging to `BankClient`
+- [x] Write unit tests (mock HttpClient, test all response scenarios)
 
 ---
 
