@@ -63,7 +63,7 @@ public class PaymentsControllerTests
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(paymentResponse);
-        Assert.Equal(PaymentStatus.Authorized, paymentResponse!.Status);
+        Assert.Equal("Authorized", paymentResponse!.Status);
         Assert.NotEqual(Guid.Empty, paymentResponse.Id);
     }
 
@@ -112,7 +112,7 @@ public class PaymentsControllerTests
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(paymentResponse);
-        Assert.Equal(PaymentStatus.Declined, paymentResponse!.Status);
+        Assert.Equal("Declined", paymentResponse!.Status);
     }
 
     [Fact]
@@ -207,7 +207,7 @@ public class PaymentsControllerTests
         var payment = new PostPaymentResponse
         {
             Id = Guid.NewGuid(),
-            Status = PaymentStatus.Authorized,
+            Status = "Authorized",
             CardNumberLastFour = "3456",
             ExpiryMonth = 12,
             ExpiryYear = 2025,
@@ -231,7 +231,7 @@ public class PaymentsControllerTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(paymentResponse);
         Assert.Equal(payment.Id, paymentResponse!.Id);
-        Assert.Equal(PaymentStatus.Authorized, paymentResponse.Status);
+        Assert.Equal("Authorized", paymentResponse.Status);
     }
 
     [Fact]

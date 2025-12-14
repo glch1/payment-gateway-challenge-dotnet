@@ -3,7 +3,7 @@
 public class GetPaymentResponse
 {
     public Guid Id { get; set; }
-    public PaymentStatus Status { get; set; }
+    public string Status { get; set; } = string.Empty;
     public string CardNumberLastFour { get; set; } = string.Empty;
     public int ExpiryMonth { get; set; }
     public int ExpiryYear { get; set; }

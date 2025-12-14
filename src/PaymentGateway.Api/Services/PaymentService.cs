@@ -59,11 +59,11 @@ public class PaymentService : IPaymentService
 
         // Step 4: Call bank
         BankPaymentResponse bankResponse;
-        PaymentStatus status;
+        string status;
         try
         {
             bankResponse = await _bankClient.ProcessPaymentAsync(bankRequest);
-            status = bankResponse.Authorized ? PaymentStatus.Authorized : PaymentStatus.Declined;
+            status = bankResponse.Authorized ? PaymentStatus.Authorized.ToString() : PaymentStatus.Declined.ToString();
 
             _logger.LogDebug("Bank response received. PaymentId: {PaymentId}, Authorized: {Authorized}, AuthorizationCode: {AuthorizationCode}",
                 paymentId, bankResponse.Authorized, bankResponse.AuthorizationCode);

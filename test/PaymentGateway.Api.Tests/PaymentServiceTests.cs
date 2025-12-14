@@ -70,7 +70,7 @@ public class PaymentServiceTests
         var result = await _paymentService.ProcessPaymentAsync(request);
 
         // Assert
-        Assert.Equal(PaymentStatus.Authorized, result.Status);
+        Assert.Equal("Authorized", result.Status);
         Assert.NotEqual(Guid.Empty, result.Id);
         Assert.Equal("3456", result.CardNumberLastFour);
         Assert.Equal(request.ExpiryMonth, result.ExpiryMonth);
@@ -82,7 +82,7 @@ public class PaymentServiceTests
         _repositoryMock.Verify(x => x.AddAsync(
             It.Is<PostPaymentResponse>(p =>
                 p.Id == result.Id &&
-                p.Status == PaymentStatus.Authorized)),
+                p.Status == "Authorized")),
             Times.Once);
     }
 
@@ -105,7 +105,7 @@ public class PaymentServiceTests
         var result = await _paymentService.ProcessPaymentAsync(request);
 
         // Assert
-        Assert.Equal(PaymentStatus.Declined, result.Status);
+        Assert.Equal("Declined", result.Status);
         Assert.NotEqual(Guid.Empty, result.Id);
         Assert.Equal("3456", result.CardNumberLastFour);
 
@@ -113,7 +113,7 @@ public class PaymentServiceTests
         _repositoryMock.Verify(x => x.AddAsync(
             It.Is<PostPaymentResponse>(p =>
                 p.Id == result.Id &&
-                p.Status == PaymentStatus.Declined)),
+                p.Status == "Declined")),
             Times.Once);
     }
 
