@@ -141,15 +141,20 @@ Controller → Service → Validator/BankClient → Repository
 
 ---
 
-### Task 3: Payment Service
+### Task 3: Payment Service ✅
 **Branch**: `task/3-payment-service`
 
-- [ ] Create `PaymentService`:
-  - [ ] Inject validator, bank client, repository
-  - [ ] `ProcessPaymentAsync`: validate → mask card → call bank → store → return
-  - [ ] Helper `MaskCardNumber` (extract last 4 digits)
-- [ ] Register in DI
-- [ ] Write unit tests (mock all deps, test rejected/authorized/declined/error senarios)
+- [x] Create `PaymentService`:
+  - [x] Inject bank client, repository (validator is static, no DI needed)
+  - [x] `ProcessPaymentAsync`: validate → mask card → call bank → store → return
+  - [x] Helper `MaskCardNumber` moved to `PaymentHelper` static class in `Helpers/` folder
+  - [x] Mapping logic moved to `PaymentMappings` static class in `Mappings/` folder
+- [x] Create `IPaymentService` interface in `Interfaces/` folder
+- [x] Register `IPaymentService` with `PaymentService` implementation in DI
+- [x] Add debug-level logging to `PaymentService` (respects appsettings.json log levels, structured logging)
+- [x] Update `PaymentsRepository` to use `IPaymentsRepository` interface with async methods (`AddAsync`, `GetAsync`)
+- [x] Add safeguards to repository: null check in `AddAsync`, early return for `Guid.Empty` in `GetAsync`
+- [x] Write unit tests (mock all deps, test rejected/authorized/declined/error scenarios)
 
 ---
 
