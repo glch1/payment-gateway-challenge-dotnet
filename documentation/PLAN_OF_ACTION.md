@@ -107,19 +107,21 @@ Controller → Service → Validator/BankClient → Repository
 ## Tasks
 
 
-### Task 1: Models & Validation
+### Task 1: Models & Validation ✅
 **Branch**: `task/1-update-models-validation`
 
-- [ ] Update `PostPaymentRequest`: `CardNumber` (string), `Cvv` (string), add data annotations
-- [ ] Create `ValidationResult` class (IsValid, Errors list, factory methods)
-- [ ] Create `PaymentValidator` with all validation rules:
-  - [ ] Card number (14-19 digits, numeric)
-  - [ ] Expiry month (1-12)
-  - [ ] Expiry year (future date with month)
-  - [ ] Currency (GBP/EUR/USD)
-  - [ ] Amount (positive integer)
-  - [ ] CVV (3-4 digits, numeric)
-- [ ] Write unit tests for validator (all rules, edge cases, multiple failures)
+- [x] Update `PostPaymentRequest`: `CardNumber` (string), `Cvv` (string), add data annotations
+  - **Note**: CardNumber must be string to handle full 14-19 digit numbers (too large for int, and bank simulator expects string). CVV must be string to preserve leading zeros (e.g., "012") and validate length properly.
+- [x] Create constants for currencies and card details.
+- [x] Create `ValidationResult` class (IsValid, Errors list, factory methods)
+- [x] Create `PaymentValidator` with all validation rules:
+  - [x] Card number (14-19 digits, numeric)
+  - [x] Expiry month (1-12)
+  - [x] Expiry year (future date with month)
+  - [x] Currency (GBP/EUR/USD)
+  - [x] Amount (positive integer)
+  - [x] CVV (3-4 digits, numeric)
+- [x] Write unit tests for validator (all rules, edge cases, multiple failures)
 
 ---
 
