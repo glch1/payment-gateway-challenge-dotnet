@@ -120,7 +120,7 @@ public static class PaymentValidator
     {
         if (amount < CardDetailsConstants.AmountMinimum)
         {
-            errors.Add($"Amount must be at least {CardDetailsConstants.AmountMinimum} minor currency unit");
+            errors.Add($"Amount must be at greater than 0");
         }
     }
 

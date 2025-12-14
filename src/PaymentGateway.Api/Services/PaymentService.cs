@@ -1,4 +1,5 @@
 using System.Net;
+using PaymentGateway.Api.Exceptions;
 using PaymentGateway.Api.Helpers;
 using PaymentGateway.Api.Interfaces;
 using PaymentGateway.Api.Mappings;
@@ -43,19 +44,8 @@ public class PaymentService : IPaymentService
             _logger.LogInformation("Payment request validation failed. PaymentId: {PaymentId}, Errors: {Errors}",
                 paymentId, string.Join("; ", validationResult.Errors));
 
-            var rejectedResponse = new PostPaymentResponse
-            {
-                Id = paymentId,
-                Status = PaymentStatus.Rejected,
-                CardNumberLastFour = PaymentHelper.MaskCardNumber(request.CardNumber),
-                ExpiryMonth = request.ExpiryMonth,
-                ExpiryYear = request.ExpiryYear,
-                Currency = request.Currency,
-                Amount = request.Amount
-            };
-
-            // Rejected - don't call bank, don't store
-            return rejectedResponse;
+            // Throw exception with validation errors - controller will return 400 Bad Request
+            throw new ValidationException(validationResult.Errors);
         }
 
         _logger.LogDebug("Payment request validation passed. PaymentId: {PaymentId}", paymentId);
