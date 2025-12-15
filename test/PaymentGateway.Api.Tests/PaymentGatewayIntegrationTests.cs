@@ -4,8 +4,11 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
+using Moq;
+
 using PaymentGateway.Api.Controllers;
 using PaymentGateway.Api.Interfaces;
+using PaymentGateway.Api.Models.Bank;
 using PaymentGateway.Api.Models.Requests;
 using PaymentGateway.Api.Models.Responses;
 using PaymentGateway.Api.Services;
@@ -26,6 +29,41 @@ public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactor
         return _factory.CreateClient();
     }
 
+    private HttpClient CreateClientWithMockedBank(bool shouldAuthorize = true, bool shouldThrowServiceUnavailable = false)
+    {
+        var bankClientMock = new Mock<IBankClient>();
+        var repository = new PaymentsRepository();
+
+        if (shouldThrowServiceUnavailable)
+        {
+            bankClientMock
+                .Setup(x => x.ProcessPaymentAsync(It.IsAny<BankPaymentRequest>()))
+                .ThrowsAsync(new System.Net.Http.HttpRequestException("Bank service is unavailable", null, System.Net.HttpStatusCode.ServiceUnavailable));
+        }
+        else
+        {
+            var bankResponse = new BankPaymentResponse
+            {
+                Authorized = shouldAuthorize,
+                AuthorizationCode = shouldAuthorize ? "AUTH123" : string.Empty
+            };
+
+            bankClientMock
+                .Setup(x => x.ProcessPaymentAsync(It.IsAny<BankPaymentRequest>()))
+                .ReturnsAsync(bankResponse);
+        }
+
+        return _factory.WithWebHostBuilder(builder =>
+            builder.ConfigureServices(services =>
+            {
+                services.AddSingleton<IPaymentsRepository>(repository);
+                services.AddScoped<IPaymentService>(_ =>
+                    new PaymentService(bankClientMock.Object, repository, Mock.Of<Microsoft.Extensions.Logging.ILogger<PaymentService>>()));
+                services.AddScoped<IBankClient>(_ => bankClientMock.Object);
+            }))
+            .CreateClient();
+    }
+
     [Fact]
     public async Task PostPayment_ValidRequest_Returns200WithPaymentResponse()
     {
@@ -33,7 +71,7 @@ public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactor
         var request = TestHelpers.CreateValidPostPaymentRequest(shouldAuthorize: true);
 
         // Act
-        var client = CreateClient();
+        var client = CreateClientWithMockedBank(shouldAuthorize: true);
         var response = await client.PostAsJsonAsync("/api/Payments", request);
         var paymentResponse = await response.Content.ReadFromJsonAsync<PostPaymentResponse>();
 
@@ -53,7 +91,7 @@ public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactor
         request.CardNumber = "123"; // Invalid - too short
 
         // Act
-        var client = CreateClient();
+        var client = CreateClientWithMockedBank(); // Bank won't be called for invalid requests
         var response = await client.PostAsJsonAsync("/api/Payments", request);
         var errorResponse = await response.Content.ReadFromJsonAsync<Dictionary<string, System.Text.Json.JsonElement>>();
 
@@ -70,7 +108,7 @@ public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactor
         var request = TestHelpers.CreateValidPostPaymentRequest(shouldAuthorize: true);
 
         // Act
-        var client = CreateClient();
+        var client = CreateClientWithMockedBank(shouldAuthorize: true);
         var response = await client.PostAsJsonAsync("/api/Payments", request);
         var paymentResponse = await response.Content.ReadFromJsonAsync<PostPaymentResponse>();
 
@@ -88,7 +126,7 @@ public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactor
         request.CardNumber = "1234567890123457"; // Ends in 7 (odd) - will be authorized
 
         // Act
-        var client = CreateClient();
+        var client = CreateClientWithMockedBank(shouldAuthorize: true);
         var response = await client.PostAsJsonAsync("/api/Payments", request);
         var paymentResponse = await response.Content.ReadFromJsonAsync<PostPaymentResponse>();
 
@@ -107,7 +145,7 @@ public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactor
         request.CardNumber = "1234567890123456"; // Ends in 6 (even) - will be declined
 
         // Act
-        var client = CreateClient();
+        var client = CreateClientWithMockedBank(shouldAuthorize: false);
         var response = await client.PostAsJsonAsync("/api/Payments", request);
         var paymentResponse = await response.Content.ReadFromJsonAsync<PostPaymentResponse>();
 
@@ -137,7 +175,7 @@ public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactor
         }
 
         // Act
-        var client = CreateClient();
+        var client = CreateClientWithMockedBank(shouldAuthorize: true);
         var response = await client.PostAsJsonAsync("/api/Payments", request);
         var paymentResponse = await response.Content.ReadFromJsonAsync<PostPaymentResponse>();
 
@@ -161,7 +199,7 @@ public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactor
         request.Amount = 1050;
 
         // Act
-        var client = CreateClient();
+        var client = CreateClientWithMockedBank(shouldAuthorize: true);
         var response = await client.PostAsJsonAsync("/api/Payments", request);
         var paymentResponse = await response.Content.ReadFromJsonAsync<PostPaymentResponse>();
 
@@ -187,7 +225,7 @@ public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactor
         request.CardNumber = cardNumber;
 
         // Act
-        var client = CreateClient();
+        var client = CreateClientWithMockedBank(shouldAuthorize: true);
         var response = await client.PostAsJsonAsync("/api/Payments", request);
         var paymentResponse = await response.Content.ReadFromJsonAsync<PostPaymentResponse>();
 
@@ -209,7 +247,7 @@ public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactor
         request.CardNumber = cardNumber;
 
         // Act
-        var client = CreateClient();
+        var client = CreateClientWithMockedBank(shouldAuthorize: false);
         var response = await client.PostAsJsonAsync("/api/Payments", request);
         var paymentResponse = await response.Content.ReadFromJsonAsync<PostPaymentResponse>();
 
@@ -227,7 +265,7 @@ public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactor
         request.CardNumber = "1234567890123450"; // Ends in 0
 
         // Act
-        var client = CreateClient();
+        var client = CreateClientWithMockedBank(shouldThrowServiceUnavailable: true);
         var response = await client.PostAsJsonAsync("/api/Payments", request);
 
         // Assert
@@ -246,7 +284,7 @@ public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactor
         request.CardNumber = cardNumber.Substring(0, cardNumber.Length - 1) + "7";
 
         // Act
-        var client = CreateClient();
+        var client = CreateClientWithMockedBank(shouldAuthorize: true);
         var response = await client.PostAsJsonAsync("/api/Payments", request);
         var paymentResponse = await response.Content.ReadFromJsonAsync<PostPaymentResponse>();
 
@@ -266,7 +304,7 @@ public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactor
         request.Cvv = cvv;
 
         // Act
-        var client = CreateClient();
+        var client = CreateClientWithMockedBank(shouldAuthorize: true);
         var response = await client.PostAsJsonAsync("/api/Payments", request);
 
         // Assert
