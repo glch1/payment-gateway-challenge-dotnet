@@ -9,24 +9,18 @@ using Moq;
 using PaymentGateway.Api.Controllers;
 using PaymentGateway.Api.Interfaces;
 using PaymentGateway.Api.Models.Bank;
-using PaymentGateway.Api.Models.Requests;
 using PaymentGateway.Api.Models.Responses;
 using PaymentGateway.Api.Services;
 
 namespace PaymentGateway.Api.Tests;
 
-public class PaymentGatewayIntegrationTests : IClassFixture<WebApplicationFactory<PaymentsController>>
+public class PaymentControllerTests : IClassFixture<WebApplicationFactory<PaymentsController>>
 {
     private readonly WebApplicationFactory<PaymentsController> _factory;
 
-    public PaymentGatewayIntegrationTests(WebApplicationFactory<PaymentsController> factory)
+    public PaymentControllerTests(WebApplicationFactory<PaymentsController> factory)
     {
         _factory = factory;
-    }
-
-    private HttpClient CreateClient()
-    {
-        return _factory.CreateClient();
     }
 
     private HttpClient CreateClientWithMockedBank(bool shouldAuthorize = true, bool shouldThrowServiceUnavailable = false)
