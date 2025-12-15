@@ -8,6 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+// Configure request size limits to prevent DoS attacks
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 1024; // 1KB max for form data
+});
 builder.Services.AddSwaggerGen(c =>
 {
     // Include XML comments in Swagger documentation
@@ -33,6 +39,10 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 // Register HttpClient for BankClient with interface
 builder.Services.AddHttpClient<IBankClient, BankClient>();
 
+// Add health checks for monitoring and load balancer health probes
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,6 +55,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+// Health check endpoint for load balancers and monitoring
+app.MapHealthChecks("/health");
 
 app.MapControllers();
 
