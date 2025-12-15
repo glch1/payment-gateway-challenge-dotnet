@@ -11,7 +11,7 @@ public class PaymentValidatorTests
     public void Validate_ValidPaymentRequest_ReturnsSuccess()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
 
         // Act
         var result = PaymentValidator.Validate(request);
@@ -25,7 +25,7 @@ public class PaymentValidatorTests
     public void Validate_CardNumber_Empty_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.CardNumber = string.Empty;
 
         // Act
@@ -40,7 +40,7 @@ public class PaymentValidatorTests
     public void Validate_CardNumber_TooShort_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.CardNumber = "1234567890123"; // 13 digits
 
         // Act
@@ -55,7 +55,7 @@ public class PaymentValidatorTests
     public void Validate_CardNumber_TooLong_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.CardNumber = "12345678901234567890"; // 20 digits
 
         // Act
@@ -70,7 +70,7 @@ public class PaymentValidatorTests
     public void Validate_CardNumber_Exactly14Digits_ReturnsSuccess()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.CardNumber = "12345678901234"; // 14 digits
 
         // Act
@@ -84,7 +84,7 @@ public class PaymentValidatorTests
     public void Validate_CardNumber_Exactly19Digits_ReturnsSuccess()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.CardNumber = "1234567890123456789"; // 19 digits
 
         // Act
@@ -98,7 +98,7 @@ public class PaymentValidatorTests
     public void Validate_CardNumber_ContainsLetters_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.CardNumber = "12345678901234AB";
 
         // Act
@@ -113,7 +113,7 @@ public class PaymentValidatorTests
     public void Validate_ExpiryMonth_LessThan1_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.ExpiryMonth = 0;
 
         // Act
@@ -128,7 +128,7 @@ public class PaymentValidatorTests
     public void Validate_ExpiryMonth_GreaterThan12_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.ExpiryMonth = 13;
 
         // Act
@@ -143,7 +143,7 @@ public class PaymentValidatorTests
     public void Validate_ExpiryYear_InPast_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.ExpiryYear = DateTime.UtcNow.Year - 1;
         request.ExpiryMonth = 12;
 
@@ -160,7 +160,7 @@ public class PaymentValidatorTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.ExpiryYear = now.Year;
         request.ExpiryMonth = now.Month - 1; // Last month
 
@@ -177,7 +177,7 @@ public class PaymentValidatorTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.ExpiryYear = now.Year;
         request.ExpiryMonth = now.Month; // Current month is valid
 
@@ -193,7 +193,7 @@ public class PaymentValidatorTests
     {
         // Arrange
         var now = DateTime.UtcNow;
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
 
         // Handle December edge case - if current month is 12, next month is next year
         if (now.Month == 12)
@@ -218,7 +218,7 @@ public class PaymentValidatorTests
     public void Validate_Currency_Empty_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Currency = string.Empty;
 
         // Act
@@ -233,7 +233,7 @@ public class PaymentValidatorTests
     public void Validate_Currency_TooShort_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Currency = "GB";
 
         // Act
@@ -248,7 +248,7 @@ public class PaymentValidatorTests
     public void Validate_Currency_TooLong_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Currency = "GBPP";
 
         // Act
@@ -263,7 +263,7 @@ public class PaymentValidatorTests
     public void Validate_Currency_Unsupported_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Currency = "JPY";
 
         // Act
@@ -278,7 +278,7 @@ public class PaymentValidatorTests
     public void Validate_Currency_GBP_ReturnsSuccess()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Currency = "GBP";
 
         // Act
@@ -292,7 +292,7 @@ public class PaymentValidatorTests
     public void Validate_Currency_EUR_ReturnsSuccess()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Currency = "EUR";
 
         // Act
@@ -306,7 +306,7 @@ public class PaymentValidatorTests
     public void Validate_Currency_USD_ReturnsSuccess()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Currency = "USD";
 
         // Act
@@ -320,7 +320,7 @@ public class PaymentValidatorTests
     public void Validate_Currency_CaseInsensitive_ReturnsSuccess()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Currency = "gbp";
 
         // Act
@@ -334,7 +334,7 @@ public class PaymentValidatorTests
     public void Validate_Amount_Zero_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Amount = 0;
 
         // Act
@@ -349,7 +349,7 @@ public class PaymentValidatorTests
     public void Validate_Amount_Negative_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Amount = -100;
 
         // Act
@@ -364,7 +364,7 @@ public class PaymentValidatorTests
     public void Validate_Amount_Minimum_ReturnsSuccess()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Amount = 1;
 
         // Act
@@ -378,7 +378,7 @@ public class PaymentValidatorTests
     public void Validate_Cvv_Empty_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Cvv = string.Empty;
 
         // Act
@@ -393,7 +393,7 @@ public class PaymentValidatorTests
     public void Validate_Cvv_TooShort_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Cvv = "12"; // 2 digits
 
         // Act
@@ -408,7 +408,7 @@ public class PaymentValidatorTests
     public void Validate_Cvv_TooLong_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Cvv = "12345"; // 5 digits
 
         // Act
@@ -423,7 +423,7 @@ public class PaymentValidatorTests
     public void Validate_Cvv_ThreeDigits_ReturnsSuccess()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Cvv = "123";
 
         // Act
@@ -437,7 +437,7 @@ public class PaymentValidatorTests
     public void Validate_Cvv_FourDigits_ReturnsSuccess()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Cvv = "1234";
 
         // Act
@@ -451,7 +451,7 @@ public class PaymentValidatorTests
     public void Validate_Cvv_ContainsLetters_ReturnsError()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.Cvv = "12A";
 
         // Act
@@ -484,18 +484,5 @@ public class PaymentValidatorTests
         Assert.True(result.Errors.Count >= 6); // Should have multiple errors
     }
 
-    private static PostPaymentRequest CreateValidRequest()
-    {
-        var now = DateTime.UtcNow;
-        return new PostPaymentRequest
-        {
-            CardNumber = "1234567890123456",
-            ExpiryMonth = now.Month,
-            ExpiryYear = now.Year + 1,
-            Currency = "GBP",
-            Amount = 1000,
-            Cvv = "123"
-        };
-    }
 }
 

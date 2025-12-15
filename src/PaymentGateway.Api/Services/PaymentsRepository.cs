@@ -8,13 +8,13 @@ namespace PaymentGateway.Api.Services;
 /// </summary>
 public class PaymentsRepository : IPaymentsRepository
 {
-    private readonly List<PostPaymentResponse> _payments = new();
+    private readonly List<PaymentResponse> _payments = new();
 
     /// <summary>
     /// Adds a payment to the repository.
     /// </summary>
     /// <param name="payment">The payment to add</param>
-    public Task AddAsync(PostPaymentResponse payment)
+    public Task AddAsync(PaymentResponse payment)
     {
         if (payment == null)
         {
@@ -30,14 +30,14 @@ public class PaymentsRepository : IPaymentsRepository
     /// </summary>
     /// <param name="id">The payment identifier</param>
     /// <returns>The payment if found, otherwise null</returns>
-    public Task<PostPaymentResponse?> GetAsync(Guid id)
+    public Task<PaymentResponse?> GetAsync(Guid id)
     {
         if (id == Guid.Empty)
         {
-            return Task.FromResult<PostPaymentResponse?>(null);
+            return Task.FromResult<PaymentResponse?>(null);
         }
 
         var payment = _payments.FirstOrDefault(p => p.Id == id);
-        return Task.FromResult<PostPaymentResponse?>(payment);
+        return Task.FromResult<PaymentResponse?>(payment);
     }
 }

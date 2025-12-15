@@ -38,7 +38,7 @@ public class BankClientTests
     public async Task ProcessPaymentAsync_AuthorizedResponse_ReturnsAuthorized()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidBankPaymentRequest();
         var bankResponse = new BankPaymentResponse
         {
             Authorized = true,
@@ -60,7 +60,7 @@ public class BankClientTests
     public async Task ProcessPaymentAsync_DeclinedResponse_ReturnsDeclined()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidBankPaymentRequest();
         var bankResponse = new BankPaymentResponse
         {
             Authorized = false,
@@ -81,7 +81,7 @@ public class BankClientTests
     public async Task ProcessPaymentAsync_SendsCorrectRequestFormat()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidBankPaymentRequest();
         request.ExpiryDate = "05/2025";
 
         SetupHttpResponse(HttpStatusCode.OK, new BankPaymentResponse { Authorized = true, AuthorizationCode = "test" });
@@ -103,7 +103,7 @@ public class BankClientTests
     public async Task ProcessPaymentAsync_ServiceUnavailable_ThrowsHttpRequestException()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidBankPaymentRequest();
         SetupHttpResponse(HttpStatusCode.ServiceUnavailable, null);
 
         // Act
@@ -118,7 +118,7 @@ public class BankClientTests
     public async Task ProcessPaymentAsync_BadRequest_ThrowsHttpRequestException()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidBankPaymentRequest();
         var errorResponse = new { error_message = "Not all required properties were sent" };
         SetupHttpResponse(HttpStatusCode.BadRequest, errorResponse, isJson: true);
 
@@ -134,7 +134,7 @@ public class BankClientTests
     public async Task ProcessPaymentAsync_Timeout_ThrowsHttpRequestException()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidBankPaymentRequest();
         _httpMessageHandlerMock
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
@@ -155,7 +155,7 @@ public class BankClientTests
     public async Task ProcessPaymentAsync_InvalidJsonResponse_ThrowsHttpRequestException()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidBankPaymentRequest();
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("invalid json", Encoding.UTF8, "application/json")
@@ -185,7 +185,7 @@ public class BankClientTests
         _configurationMock.Setup(x => x["BankSimulator:BaseUrl"]).Returns(customBaseUrl);
         var customLogger = new Mock<ILogger<BankClient>>();
         var customClient = new BankClient(_httpClient, _configurationMock.Object, customLogger.Object);
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidBankPaymentRequest();
         SetupHttpResponse(HttpStatusCode.OK, new BankPaymentResponse { Authorized = true, AuthorizationCode = "test" });
 
         // Act
@@ -203,7 +203,7 @@ public class BankClientTests
         emptyConfig.Setup(x => x["BankSimulator:BaseUrl"]).Returns((string?)null);
         var defaultLogger = new Mock<ILogger<BankClient>>();
         var defaultClient = new BankClient(_httpClient, emptyConfig.Object, defaultLogger.Object);
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidBankPaymentRequest();
         SetupHttpResponse(HttpStatusCode.OK, new BankPaymentResponse { Authorized = true, AuthorizationCode = "test" });
 
         // Act
@@ -250,18 +250,6 @@ public class BankClientTests
                 req.Method == HttpMethod.Post &&
                 req.RequestUri!.ToString() == expectedUrl),
             ItExpr.IsAny<CancellationToken>());
-    }
-
-    private static BankPaymentRequest CreateValidRequest()
-    {
-        return new BankPaymentRequest
-        {
-            CardNumber = "1234567890123456",
-            ExpiryDate = "12/2025",
-            Currency = "GBP",
-            Amount = 1000,
-            Cvv = "123"
-        };
     }
 }
 

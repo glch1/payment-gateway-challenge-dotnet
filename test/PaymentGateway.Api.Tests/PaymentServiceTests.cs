@@ -55,7 +55,7 @@ public class PaymentServiceTests
     public async Task ProcessPaymentAsync_ValidRequest_Authorized_StoresPayment()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         var bankResponse = new BankPaymentResponse
         {
             Authorized = true,
@@ -90,7 +90,7 @@ public class PaymentServiceTests
     public async Task ProcessPaymentAsync_ValidRequest_Declined_StoresPayment()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         var bankResponse = new BankPaymentResponse
         {
             Authorized = false,
@@ -160,7 +160,7 @@ public class PaymentServiceTests
     public async Task ProcessPaymentAsync_BankServiceUnavailable_ThrowsException_DoesNotStore()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
 
         _bankClientMock
             .Setup(x => x.ProcessPaymentAsync(It.IsAny<BankPaymentRequest>()))
@@ -177,7 +177,7 @@ public class PaymentServiceTests
     public async Task ProcessPaymentAsync_BankTimeout_ThrowsException_DoesNotStore()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
 
         _bankClientMock
             .Setup(x => x.ProcessPaymentAsync(It.IsAny<BankPaymentRequest>()))
@@ -194,7 +194,7 @@ public class PaymentServiceTests
     public async Task ProcessPaymentAsync_MasksCardNumber_Correctly()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.CardNumber = "1234567890123456";
 
         var bankResponse = new BankPaymentResponse
@@ -218,7 +218,7 @@ public class PaymentServiceTests
     public async Task ProcessPaymentAsync_ValidCardNumber_MasksCorrectly()
     {
         // Arrange
-        var request = CreateValidRequest();
+        var request = TestHelpers.CreateValidPostPaymentRequest();
         request.CardNumber = "1234567890123456"; // Valid 16-digit card
 
         var bankResponse = new BankPaymentResponse
@@ -262,17 +262,5 @@ public class PaymentServiceTests
         _bankClientMock.Verify(x => x.ProcessPaymentAsync(It.IsAny<BankPaymentRequest>()), Times.Never);
     }
 
-    private static PostPaymentRequest CreateValidRequest()
-    {
-        return new PostPaymentRequest
-        {
-            CardNumber = "1234567890123456",
-            ExpiryMonth = 12,
-            ExpiryYear = 2025,
-            Currency = "GBP",
-            Amount = 1000,
-            Cvv = "123"
-        };
-    }
 }
 
