@@ -217,10 +217,29 @@ Controller → Service → Validator/BankClient → Repository
 ### Task 6: Polish & Docs
 **Branch**: `task/6-code-quality-docs`
 
-- [ ] Code cleanup: remove unused code, add XML comments, fix warnings
-- [ ] Update README: setup, running, testing, API docs
-- [ ] Add appsettings config (bank URL, logging)
-- [ ] Final checks: all tests pass, Swagger works, no sensitive data in logs. Double check that we're not logging any card numbers!
+- [x] Code cleanup: remove unused code, add XML comments, fix warnings
+  - [x] Added XML documentation to all public APIs (models, controllers, services, interfaces)
+  - [x] Fixed compiler warnings (Currency default value, etc.)
+  - [x] Consolidated duplicate response models into `PaymentResponse` base class
+  - [x] Fixed GET endpoint return type to use `GetPaymentResponse`
+  - [x] Added Swagger documentation with `ProducesResponseType` attributes
+  - [x] Enabled XML documentation generation in csproj
+  - [x] Created error response models (`ValidationErrorResponse`, `ErrorResponse`)
+- [x] Update README: setup, running, testing, API docs
+  - [x] Updated README with project overview, prerequisites, setup instructions
+  - [x] Added API endpoint documentation and examples
+  - [x] Included testing instructions and project structure
+  - [x] Added configuration details and feature list
+- [x] Add appsettings config (bank URL, logging)
+  - [x] `appsettings.json` has `BankSimulator:BaseUrl` configured (http://localhost:8080)
+  - [x] `appsettings.json` has `Logging:LogLevel` configuration (Default: Information, Microsoft.AspNetCore: Warning)
+  - [x] `appsettings.Development.json` has development logging configuration
+- [x] Final checks: all tests pass, Swagger works, no sensitive data in logs. Double check that we're not logging any card numbers!
+  - [x] Verified no card numbers or CVV logged in codebase (only masked last 4 digits stored)
+  - [x] All logging uses safe fields (Amount, Currency, PaymentId, Status)
+  - [x] Swagger configured with XML comments and API documentation
+  - [x] Build succeeds with 0 warnings
+  - [x] Security: Card numbers masked immediately, never logged or exposed
 
 ---
 
