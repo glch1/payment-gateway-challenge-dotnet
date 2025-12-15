@@ -8,6 +8,9 @@ using PaymentGateway.Api.Models.Responses;
 
 namespace PaymentGateway.Api.Controllers;
 
+/// <summary>
+/// Controller for processing and retrieving payments.
+/// </summary>
 [Route("api/[controller]")]
 [ApiController]
 public class PaymentsController : Controller
@@ -15,13 +18,30 @@ public class PaymentsController : Controller
     private readonly IPaymentService _paymentService;
     private readonly IPaymentsRepository _paymentsRepository;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PaymentsController"/> class.
+    /// </summary>
     public PaymentsController(IPaymentService paymentService, IPaymentsRepository paymentsRepository)
     {
         _paymentService = paymentService;
         _paymentsRepository = paymentsRepository;
     }
 
+    /// <summary>
+    /// Processes a payment request.
+    /// </summary>
+    /// <param name="request">The payment request containing card details and amount.</param>
+    /// <returns>
+    /// <para>200 OK - Payment processed successfully (Authorized or Declined status in response body).</para>
+    /// <para>400 Bad Request - Validation errors in the request.</para>
+    /// <para>500 Internal Server Error - Bank request timed out or other bank errors.</para>
+    /// <para>503 Service Unavailable - Bank service is unavailable.</para>
+    /// </returns>
     [HttpPost]
+    [ProducesResponseType(typeof(PostPaymentResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<PostPaymentResponse>> ProcessPaymentAsync([FromBody] PostPaymentRequest request)
     {
         try
@@ -54,7 +74,17 @@ public class PaymentsController : Controller
         }
     }
 
+    /// <summary>
+    /// Retrieves a payment by its unique identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the payment.</param>
+    /// <returns>
+    /// <para>200 OK - Payment found and returned.</para>
+    /// <para>404 Not Found - Payment with the specified ID does not exist.</para>
+    /// </returns>
     [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(GetPaymentResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<GetPaymentResponse?>> GetPaymentAsync(Guid id)
     {
         var payment = await _paymentsRepository.GetAsync(id);

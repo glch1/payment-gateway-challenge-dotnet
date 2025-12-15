@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
+using Polly.CircuitBreaker;
 using PaymentGateway.Api.Interfaces;
 using PaymentGateway.Api.Models.Bank;
 
@@ -80,6 +81,12 @@ public class BankClient : IBankClient
                 bankResponse.Authorized, bankResponse.AuthorizationCode);
 
             return bankResponse;
+        }
+        catch (BrokenCircuitException ex)
+        {
+            // Circuit breaker is open - bank service is unavailable
+            _logger.LogDebug(ex, "Circuit breaker is open - bank service is unavailable");
+            throw new HttpRequestException("Bank service is unavailable", ex, HttpStatusCode.ServiceUnavailable);
         }
         catch (SocketException ex)
         {
