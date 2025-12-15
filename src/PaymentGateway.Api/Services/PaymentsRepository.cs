@@ -1,4 +1,5 @@
-﻿using PaymentGateway.Api.Interfaces;
+﻿using System.Collections.Concurrent;
+using PaymentGateway.Api.Interfaces;
 using PaymentGateway.Api.Models.Responses;
 
 namespace PaymentGateway.Api.Services;
@@ -8,7 +9,7 @@ namespace PaymentGateway.Api.Services;
 /// </summary>
 public class PaymentsRepository : IPaymentsRepository
 {
-    private readonly List<PaymentResponse> _payments = new();
+    private readonly ConcurrentDictionary<Guid, PaymentResponse> _payments = new();
 
     /// <summary>
     /// Adds a payment to the repository.
@@ -21,7 +22,7 @@ public class PaymentsRepository : IPaymentsRepository
             throw new ArgumentNullException(nameof(payment));
         }
 
-        _payments.Add(payment);
+        _payments.TryAdd(payment.Id, payment);
         return Task.CompletedTask;
     }
 
@@ -37,7 +38,7 @@ public class PaymentsRepository : IPaymentsRepository
             return Task.FromResult<PaymentResponse?>(null);
         }
 
-        var payment = _payments.FirstOrDefault(p => p.Id == id);
+        _payments.TryGetValue(id, out var payment);
         return Task.FromResult<PaymentResponse?>(payment);
     }
 }
